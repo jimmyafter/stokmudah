@@ -89,6 +89,7 @@ export const en = {
   'camera.lookingUp': 'Looking up product…',
   'camera.found': 'Product found',
   'camera.notFound': 'Barcode not found. Type the name once and it is remembered.',
+  'camera.lookupFailed': 'Could not reach the product database. Check your connection, or type the name.',
   'camera.manual': 'Type it instead',
   'camera.scanAgain': 'Scan again',
   'camera.photoSoon': 'Photo, expiry and receipt scans arrive with the AI backend.',

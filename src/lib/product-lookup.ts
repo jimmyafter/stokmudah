@@ -1,31 +1,62 @@
-export interface ProductInfo {
-  name: string;
+export type LookupResult =
+  | { status: 'found'; name: string }
+  | { status: 'notfound' }
+  | { status: 'error' };
+
+/** Open Food Facts and its sister databases share one API. Toiletries and household goods are in the other two. */
+const SOURCES = [
+  'world.openfoodfacts.org',
+  'world.openbeautyfacts.org',
+  'world.openproductsfacts.org',
+];
+
+/** 12-digit UPC-A codes are stored as 13-digit EAN codes with a leading zero. */
+function normalizeBarcode(code: string): string {
+  const digits = code.replace(/\D/g, '');
+  return digits.length === 12 ? `0${digits}` : digits;
 }
 
-/**
- * Look a barcode up on Open Food Facts. Returns null when the product is unknown,
- * the network fails, or it takes longer than a few seconds. Local products are often missing.
- */
-export async function lookupBarcode(code: string, timeoutMs = 6000): Promise<ProductInfo | null> {
+interface ProductResponse {
+  status?: number;
+  product?: { product_name?: string; brands?: string; quantity?: string };
+}
+
+async function lookupIn(host: string, code: string, timeoutMs: number): Promise<ProductResponse | 'error'> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(
-      `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,brands,quantity`,
-      { signal: controller.signal },
+      `https://${host}/api/v2/product/${encodeURIComponent(code)}.json?fields=product_name,brands,quantity`,
+      { signal: controller.signal, headers: { 'User-Agent': 'StokMudah/1.0 (home stock app)' } },
     );
-    if (!response.ok) return null;
-    const json = (await response.json()) as {
-      status?: number;
-      product?: { product_name?: string; brands?: string; quantity?: string };
-    };
-    if (json.status !== 1 || !json.product?.product_name) return null;
-    const brand = json.product.brands?.split(',')[0]?.trim();
-    const parts = [brand, json.product.product_name.trim(), json.product.quantity?.trim()].filter(Boolean);
-    return { name: parts.join(' ') };
+    // A 404 is how these databases say "no such product", not a failure.
+    if (response.status === 404) return {};
+    if (!response.ok) return 'error';
+    return (await response.json()) as ProductResponse;
   } catch {
-    return null;
+    return 'error';
   } finally {
     clearTimeout(timer);
   }
+}
+
+/**
+ * Look a barcode up. Distinguishes "not in the database" from "could not reach it",
+ * because local Malaysian products are often missing and the user should know which happened.
+ */
+export async function lookupBarcode(rawCode: string, timeoutMs = 6000): Promise<LookupResult> {
+  const code = normalizeBarcode(rawCode);
+  let reached = 0;
+  for (const host of SOURCES) {
+    const result = await lookupIn(host, code, timeoutMs);
+    if (result === 'error') continue;
+    reached += 1;
+    const product = result.product;
+    if (result.status === 1 && product?.product_name) {
+      const brand = product.brands?.split(',')[0]?.trim();
+      const parts = [brand, product.product_name.trim(), product.quantity?.trim()].filter(Boolean);
+      return { status: 'found', name: parts.join(' ') };
+    }
+  }
+  return reached === 0 ? { status: 'error' } : { status: 'notfound' };
 }

@@ -10,20 +10,20 @@ import { Icon } from '@/components/icons';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
 import { useTheme } from '@/hooks/use-theme';
-import { lookupBarcode } from '@/lib/product-lookup';
+import { lookupBarcode, type LookupResult } from '@/lib/product-lookup';
 import { useInventory } from '@/store/inventory';
 
 type Stage =
   | { name: 'scan' }
   | { name: 'lookup'; barcode: string }
-  | { name: 'form'; barcode?: string; initialName: string; found: boolean };
+  | { name: 'form'; barcode?: string; initialName: string; lookup: LookupResult['status'] | 'none' };
 
 const MODES = ['barcode', 'item', 'expiry', 'receipt'] as const;
 
 export default function CameraScreen() {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
-  const { t, addPurchase } = useInventory();
+  const { t, items, addPurchase } = useInventory();
   const { mode } = useLocalSearchParams<{ mode?: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const [stage, setStage] = useState<Stage>({ name: 'scan' });
@@ -36,9 +36,28 @@ export default function CameraScreen() {
   async function onScanned(code: string) {
     if (handled.current) return;
     handled.current = true;
+    // A barcode you have scanned before is remembered, so skip the network.
+    const known = items.find((item) => item.barcode === code);
+    if (known) {
+      setStage({ name: 'form', barcode: code, initialName: known.name, lookup: 'found' });
+      return;
+    }
     setStage({ name: 'lookup', barcode: code });
     const product = await lookupBarcode(code);
-    setStage({ name: 'form', barcode: code, initialName: product?.name ?? '', found: !!product });
+    setStage({
+      name: 'form',
+      barcode: code,
+      initialName: product.status === 'found' ? product.name : '',
+      lookup: product.status,
+    });
+  }
+
+  function bannerFor(form: Extract<Stage, { name: 'form' }>): string | undefined {
+    const code = form.barcode ? ` (${form.barcode})` : '';
+    if (form.lookup === 'found') return t('camera.found') + code;
+    if (form.lookup === 'notfound') return t('camera.notFound') + code;
+    if (form.lookup === 'error') return t('camera.lookupFailed') + code;
+    return undefined;
   }
 
   if (stage.name === 'form') {
@@ -46,7 +65,7 @@ export default function CameraScreen() {
       <AddItemForm
         initialName={stage.initialName}
         barcode={stage.barcode}
-        banner={stage.found ? t('camera.found') : stage.barcode ? t('camera.notFound') : undefined}
+        banner={bannerFor(stage)}
         onCancel={() => {
           handled.current = false;
           setStage({ name: 'scan' });
@@ -71,7 +90,7 @@ export default function CameraScreen() {
             <Button
               label={t('camera.manual')}
               variant="secondary"
-              onPress={() => setStage({ name: 'form', initialName: '', found: false })}
+              onPress={() => setStage({ name: 'form', initialName: '', lookup: 'none' })}
             />
           </>
         }>
@@ -159,7 +178,7 @@ export default function CameraScreen() {
         <Button
           label={t('camera.manual')}
           variant="secondary"
-          onPress={() => setStage({ name: 'form', initialName: '', found: false })}
+          onPress={() => setStage({ name: 'form', initialName: '', lookup: 'none' })}
         />
       </View>
     </View>

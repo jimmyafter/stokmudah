@@ -91,6 +91,7 @@ export const ms: Record<TKey, string> = {
   'camera.lookingUp': 'Mencari produk…',
   'camera.found': 'Produk dijumpai',
   'camera.notFound': 'Kod bar tidak dijumpai. Taip nama sekali sahaja, ia akan diingati.',
+  'camera.lookupFailed': 'Tidak dapat capai pangkalan data produk. Semak sambungan anda, atau taip nama.',
   'camera.manual': 'Taip sendiri',
   'camera.scanAgain': 'Imbas semula',
   'camera.photoSoon': 'Imbasan gambar, tarikh luput dan resit tersedia bersama AI.',
