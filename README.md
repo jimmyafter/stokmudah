@@ -55,7 +55,7 @@ src/lib          pure logic: stock status, shopping list, WhatsApp links, dates
 src/store        app state and storage
 src/i18n         English and Bahasa Melayu strings
 src/data         demo data
-supabase         migrations and the scan edge function
+supabase         migrations (the scan edge function is deployed in Supabase)
 ```
 
 ## Before a store release
