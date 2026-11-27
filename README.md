@@ -27,14 +27,24 @@ Data is stored on the device with AsyncStorage. A fresh install starts with **de
 
 ## Not built yet
 
-- AI photo recognition, expiry-date photos and receipt matching (needs the backend, below).
 - Push notifications (the reminder switches are saved but nothing is sent yet).
 - Free and Premium limits, the paywall, and sign-in.
 - Sync across devices.
 
-## Backend plan
+## AI photo scan
 
-`supabase/migrations/0001_init.sql` holds the planned database schema with row-level security. It has not been applied to any Supabase project. AI calls will go through a server function so no API key ships in the app.
+The camera has four modes: **Barcode**, **Item** (photo of the product), **Expiry** (photo of the date) and **Receipt** (receipt or shopping haul). Photos are shrunk on the phone, sent to the `scan` Supabase Edge Function, which calls an Anthropic vision model and returns JSON. Receipt results open a review list; nothing changes stock until you confirm, and low-confidence lines start unticked.
+
+Limits are enforced on the server: 10 scans a month on the free plan, 150 on premium (`profiles.plan`). A failed AI call refunds the scan.
+
+One-time setup in the Supabase project `fywgvppbvisvchwbyffz`:
+
+1. Authentication, Sign In / Providers: switch on **Anonymous sign-ins**.
+2. Edge Functions, Secrets: add `ANTHROPIC_API_KEY`. Optionally add `ANTHROPIC_MODEL` to change the model (default `claude-sonnet-5-5`).
+
+The app reads the project URL and publishable key from `.env` (public values only). The Anthropic key never goes in the app.
+
+Applied schema: `supabase/migrations/0002_ai_scan.sql` (usage counter and profiles). `0001_init.sql` is the planned sync schema and is not applied.
 
 ## Project layout
 
@@ -45,7 +55,7 @@ src/lib          pure logic: stock status, shopping list, WhatsApp links, dates
 src/store        app state and storage
 src/i18n         English and Bahasa Melayu strings
 src/data         demo data
-supabase         planned database schema
+supabase         migrations and the scan edge function
 ```
 
 ## Before a store release

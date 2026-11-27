@@ -44,21 +44,24 @@ function expiryDate(choice: ExpiryChoice): string | undefined {
 interface AddItemFormProps {
   initialName: string;
   barcode?: string;
+  initialCategory?: Category;
+  /** An exact date (YYYY-MM-DD), for example read from a photo of the pack. */
+  initialExpiry?: string;
   /** Shown above the form, for example "Product found". */
   banner?: string;
   onSave: (purchase: NewPurchase) => void;
   onCancel: () => void;
 }
 
-export function AddItemForm({ initialName, barcode, banner, onSave, onCancel }: AddItemFormProps) {
+export function AddItemForm({ initialName, barcode, initialCategory, initialExpiry, banner, onSave, onCancel }: AddItemFormProps) {
   const theme = useTheme();
   const { t } = useInventory();
   const [name, setName] = useState(initialName);
   const [packs, setPacks] = useState(1);
   const [level, setLevel] = useState(1);
-  const [category, setCategory] = useState<Category>('pantry');
+  const [category, setCategory] = useState<Category>(initialCategory ?? 'pantry');
   const [location, setLocation] = useState<Location>('kitchen');
-  const [expiry, setExpiry] = useState<ExpiryChoice>('none');
+  const [expiry, setExpiry] = useState<ExpiryChoice | 'scanned'>(initialExpiry ? 'scanned' : 'none');
   const [price, setPrice] = useState('');
   const [missingName, setMissingName] = useState(false);
 
@@ -75,7 +78,7 @@ export function AddItemForm({ initialName, barcode, banner, onSave, onCancel }: 
       location,
       packs,
       level,
-      expiry: expiryDate(expiry),
+      expiry: expiry === 'scanned' ? initialExpiry : expiryDate(expiry),
       price: Number.isFinite(parsed) ? parsed : undefined,
     });
   }
@@ -167,6 +170,9 @@ export function AddItemForm({ initialName, barcode, banner, onSave, onCancel }: 
         {t('add.expiry')}
       </Text>
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        {initialExpiry ? (
+          <Chip label={initialExpiry} selected={expiry === 'scanned'} onPress={() => setExpiry('scanned')} />
+        ) : null}
         {EXPIRY.map((choice) => (
           <Chip key={choice.id} label={t(choice.key)} selected={expiry === choice.id} onPress={() => setExpiry(choice.id)} />
         ))}
