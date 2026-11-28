@@ -3,13 +3,14 @@ import { TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
+import { DateInput } from '@/components/date-input';
 import { LevelSlider } from '@/components/level-slider';
 import { Screen } from '@/components/screen';
 import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
 import { fontFor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
-import { addDays, addMonths, toISODate } from '@/lib/dates';
+import { addDays, addMonths, parseUserDate, toISODate } from '@/lib/dates';
 import { levelLabel, type TKey } from '@/i18n';
 import { useInventory, type NewPurchase } from '@/store/inventory';
 import type { Category, Location } from '@/types';
@@ -63,7 +64,9 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
   const [level, setLevel] = useState(1);
   const [category, setCategory] = useState<Category>(initialCategory ?? 'pantry');
   const [location, setLocation] = useState<Location>('kitchen');
-  const [expiry, setExpiry] = useState<ExpiryChoice | 'scanned'>(initialExpiry ? 'scanned' : 'none');
+  const [expiry, setExpiry] = useState<ExpiryChoice | 'scanned' | 'manual'>(initialExpiry ? 'scanned' : 'none');
+  const [dateText, setDateText] = useState('');
+  const manualDate = parseUserDate(dateText);
   const [price, setPrice] = useState('');
   const [missingName, setMissingName] = useState(false);
 
@@ -72,6 +75,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
       setMissingName(true);
       return;
     }
+    if (expiry === 'manual' && !manualDate) return;
     const parsed = parseFloat(price.replace(',', '.'));
     onSave({
       name,
@@ -81,7 +85,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
       packs,
       level,
       photo,
-      expiry: expiry === 'scanned' ? initialExpiry : expiryDate(expiry),
+      expiry: expiry === 'manual' ? (manualDate ?? undefined) : expiry === 'scanned' ? initialExpiry : expiryDate(expiry),
       price: Number.isFinite(parsed) ? parsed : undefined,
     });
   }
@@ -177,9 +181,28 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
           <Chip label={initialExpiry} selected={expiry === 'scanned'} onPress={() => setExpiry('scanned')} />
         ) : null}
         {EXPIRY.map((choice) => (
-          <Chip key={choice.id} label={t(choice.key)} selected={expiry === choice.id} onPress={() => setExpiry(choice.id)} />
+          <Chip
+            key={choice.id}
+            label={t(choice.key)}
+            selected={expiry === choice.id}
+            onPress={() => {
+              setExpiry(choice.id);
+              setDateText('');
+            }}
+          />
         ))}
       </View>
+      <Text variant="small" color="textMuted">
+        {t('add.typeDate')}
+      </Text>
+      <DateInput
+        text={dateText}
+        label={t('add.typeDate')}
+        onChangeText={(value) => {
+          setDateText(value);
+          if (parseUserDate(value)) setExpiry('manual');
+        }}
+      />
 
       <Text variant="label" color="textMuted" style={{ marginTop: 6 }}>
         {t('add.price')}

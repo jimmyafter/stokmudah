@@ -30,3 +30,31 @@ export function daysUntil(iso: string, from: Date = new Date()): number {
   const end = parseISODate(iso).getTime();
   return Math.round((end - start) / 86_400_000);
 }
+
+/** Keep only digits and add slashes as the person types: 28112026 becomes 28/11/2026. */
+export function maskDateInput(raw: string): string {
+  const digits = raw.replace(/\D/g, '').slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+/** Parse DD/MM/YYYY (the order used in Malaysia) into an ISO date, or null when it is not a real date. */
+export function parseUserDate(text: string): string | null {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(text.trim());
+  if (!match) return null;
+  const day = Number(match[1]);
+  const month = Number(match[2]);
+  const year = Number(match[3]);
+  if (year < 2000 || year > 2100) return null;
+  const date = new Date(year, month - 1, day);
+  if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) return null;
+  return toISODate(date);
+}
+
+/** ISO date to DD/MM/YYYY for the text box. */
+export function formatUserDate(iso: string | undefined): string {
+  if (!iso) return '';
+  const [y, m, d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}

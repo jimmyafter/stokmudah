@@ -85,6 +85,13 @@ export const ms: Record<TKey, string> = {
   'item.throwAway': 'Buang',
   'item.notFound': 'Barang ini sudah tiada.',
   'item.edit': 'Ubah barang',
+  'date.placeholder': 'HH/BB/TTTT',
+  'date.invalid': 'Tarikh itu tidak wujud. Guna hari/bulan/tahun.',
+  'add.typeDate': 'Atau taip tarikh',
+  'batch.hint': 'Ketik kelompok untuk tukar tarikh atau bilangan pek.',
+  'batch.edit': 'Ubah kelompok',
+  'batch.remove': 'Buang kelompok',
+  'batch.expiryNone': 'Tiada tarikh luput',
   'item.delete': 'Padam barang',
 
   'camera.title': 'Tambah barang',

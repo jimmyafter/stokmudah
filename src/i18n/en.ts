@@ -83,6 +83,13 @@ export const en = {
   'item.throwAway': 'Throw away',
   'item.notFound': 'This item no longer exists.',
   'item.edit': 'Edit item',
+  'date.placeholder': 'DD/MM/YYYY',
+  'date.invalid': 'That date does not exist. Use day/month/year.',
+  'add.typeDate': 'Or type the date',
+  'batch.hint': 'Tap a batch to change its date or packs.',
+  'batch.edit': 'Edit batch',
+  'batch.remove': 'Remove batch',
+  'batch.expiryNone': 'No expiry date',
   'item.delete': 'Delete item',
 
   'camera.title': 'Add an item',

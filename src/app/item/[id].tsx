@@ -6,6 +6,8 @@ import { Avatar, useStatusLabel } from '@/components/item-row';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Chip } from '@/components/chip';
+import { DateInput } from '@/components/date-input';
+import { Stepper } from '@/components/stepper';
 import { Icon } from '@/components/icons';
 import { Pill } from '@/components/pill';
 import { Screen } from '@/components/screen';
@@ -13,7 +15,7 @@ import { Text } from '@/components/text';
 import { fontFor, Shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { formatDays, levelLabel } from '@/i18n';
-import { daysUntil, parseISODate } from '@/lib/dates';
+import { daysUntil, formatUserDate, parseISODate, parseUserDate } from '@/lib/dates';
 import { unitsLeft } from '@/lib/stock';
 import { useInventory } from '@/store/inventory';
 import type { Category, Location } from '@/types';
@@ -28,6 +30,9 @@ export default function ItemDetail() {
   const statusLabel = useStatusLabel();
   const item = items.find((candidate) => candidate.id === id);
   const [editing, setEditing] = useState(false);
+  const [batchId, setBatchId] = useState<string | null>(null);
+  const [batchQty, setBatchQty] = useState(1);
+  const [batchDate, setBatchDate] = useState('');
   const [name, setName] = useState('');
   const [category, setCategory] = useState<Category>('pantry');
   const [location, setLocation] = useState<Location>('kitchen');
@@ -129,6 +134,57 @@ export default function ItemDetail() {
             />
           </View>
         </View>
+      ) : batchId ? (
+        <View style={{ gap: 12 }}>
+          <Text variant="h2">{t('batch.edit')}</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text variant="h3">{t('item.packs')}</Text>
+            <Stepper
+              value={batchQty}
+              min={1}
+              onChange={setBatchQty}
+              decreaseLabel={`${t('item.packs')} −`}
+              increaseLabel={`${t('item.packs')} +`}
+            />
+          </View>
+          <Text variant="label" color="textMuted">
+            {t('add.expiry')}
+          </Text>
+          <DateInput text={batchDate} label={t('add.expiry')} onChangeText={setBatchDate} />
+          <Chip label={t('batch.expiryNone')} selected={batchDate === ''} onPress={() => setBatchDate('')} />
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
+            <Button label={t('common.cancel')} variant="secondary" style={{ flex: 1 }} onPress={() => setBatchId(null)} />
+            <Button
+              label={t('common.save')}
+              style={{ flex: 1 }}
+              disabled={batchDate !== '' && parseUserDate(batchDate) === null}
+              onPress={() => {
+                const expiry = batchDate === '' ? undefined : (parseUserDate(batchDate) ?? undefined);
+                const old = item.batches.find((b) => b.id === batchId);
+                if (!old) return setBatchId(null);
+                updateItem(item.id, {
+                  batches: item.batches.map((b) => (b.id === batchId ? { ...b, quantity: batchQty, expiry } : b)),
+                  quantity: Math.max(0, item.quantity - old.quantity + batchQty),
+                });
+                setBatchId(null);
+              }}
+            />
+          </View>
+          <Button
+            label={t('batch.remove')}
+            variant="danger"
+            small
+            onPress={() => {
+              const old = item.batches.find((b) => b.id === batchId);
+              if (!old) return setBatchId(null);
+              updateItem(item.id, {
+                batches: item.batches.filter((b) => b.id !== batchId),
+                quantity: Math.max(0, item.quantity - old.quantity),
+              });
+              setBatchId(null);
+            }}
+          />
+        </View>
       ) : (
         <>
 
@@ -194,11 +250,23 @@ export default function ItemDetail() {
       <Text variant="h2" style={{ marginTop: 6 }}>
         {t('item.batches')}
       </Text>
+      <Text variant="tiny" color="textMuted" style={{ marginTop: -6 }}>
+        {t('batch.hint')}
+      </Text>
       <View style={{ gap: 8 }}>
         {batches.map((batch) => {
           const days = batch.expiry ? daysUntil(batch.expiry) : null;
           return (
-            <Card key={batch.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
+            <Pressable
+              key={batch.id}
+              accessibilityRole="button"
+              accessibilityLabel={t('batch.edit')}
+              onPress={() => {
+                setBatchId(batch.id);
+                setBatchQty(batch.quantity);
+                setBatchDate(formatUserDate(batch.expiry));
+              }}>
+            <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10 }}>
               <View style={{ flex: 1 }}>
                 <Text variant="h3">
                   {batch.quantity} × {t('item.packs')}
@@ -215,6 +283,7 @@ export default function ItemDetail() {
                 <Pill label={formatDays(t, days)} tone={days < 0 ? 'red' : days <= item.warnDays ? 'red' : 'green'} />
               ) : null}
             </Card>
+            </Pressable>
           );
         })}
       </View>
