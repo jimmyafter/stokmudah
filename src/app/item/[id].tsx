@@ -4,7 +4,6 @@ import { View } from 'react-native';
 import { Avatar, useStatusLabel } from '@/components/item-row';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
-import { Header } from '@/components/header';
 import { Pill } from '@/components/pill';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
@@ -21,8 +20,7 @@ export default function ItemDetail() {
 
   if (!item) {
     return (
-      <Screen>
-        <Header title="" />
+      <Screen insetTop={false} contentStyle={{ paddingTop: 28 }}>
         <Text variant="body" color="textMuted">
           {t('item.notFound')}
         </Text>
@@ -40,6 +38,8 @@ export default function ItemDetail() {
   return (
     <Screen
       insetBottom
+      insetTop={false}
+      contentStyle={{ paddingTop: 28 }}
       footer={
         <View style={{ flexDirection: 'row', gap: 12 }}>
           <Button
@@ -55,8 +55,6 @@ export default function ItemDetail() {
           />
         </View>
       }>
-      <Header title="" />
-
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <Avatar name={item.name} size={64} photo={item.photo} />
         <View style={{ flex: 1, gap: 3 }}>

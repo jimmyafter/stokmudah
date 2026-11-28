@@ -11,9 +11,11 @@ interface ScreenProps {
   insetBottom?: boolean;
   contentStyle?: ViewStyle;
   footer?: ReactNode;
+  /** Set false inside a bottom sheet, which has no status bar above it. */
+  insetTop?: boolean;
 }
 
-export function Screen({ children, scroll = true, insetBottom = false, contentStyle, footer }: ScreenProps) {
+export function Screen({ children, scroll = true, insetBottom = false, contentStyle, footer, insetTop = true }: ScreenProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const padding: ViewStyle = {
@@ -23,7 +25,7 @@ export function Screen({ children, scroll = true, insetBottom = false, contentSt
     gap: 12,
   };
   return (
-    <View style={{ flex: 1, backgroundColor: theme.bg, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: theme.bg, paddingTop: insetTop ? insets.top : 0 }}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={[padding, contentStyle]}

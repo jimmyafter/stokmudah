@@ -61,7 +61,17 @@ export default function RootLayout() {
             <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
             <Stack.Screen name="count" options={{ presentation: 'modal' }} />
             <Stack.Screen name="settings" />
-            <Stack.Screen name="item/[id]" />
+            <Stack.Screen
+              name="item/[id]"
+              options={{
+                presentation: 'formSheet',
+                sheetAllowedDetents: [0.62, 1],
+                sheetGrabberVisible: true,
+                sheetCornerRadius: 32,
+                sheetExpandsWhenScrolledToEdge: true,
+                contentStyle: { backgroundColor: palette.bg },
+              }}
+            />
           </Stack>
         </Gate>
       </ThemeProvider>
