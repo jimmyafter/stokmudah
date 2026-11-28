@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { TextInput, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Pressable, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
@@ -8,7 +8,7 @@ import { LevelSlider } from '@/components/level-slider';
 import { Screen } from '@/components/screen';
 import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
-import { fontFor } from '@/constants/theme';
+import { fontFor, Shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { addDays, addMonths, parseUserDate, toISODate } from '@/lib/dates';
 import { levelLabel, type TKey } from '@/i18n';
@@ -58,7 +58,9 @@ interface AddItemFormProps {
 
 export function AddItemForm({ initialName, barcode, initialCategory, initialExpiry, photo, banner, onSave, onCancel }: AddItemFormProps) {
   const theme = useTheme();
-  const { t } = useInventory();
+  const { t, items } = useInventory();
+  const [pickedBarcode, setPickedBarcode] = useState<string | undefined>();
+  const [typed, setTyped] = useState(false);
   const [name, setName] = useState(initialName);
   const [packs, setPacks] = useState(1);
   const [level, setLevel] = useState(1);
@@ -70,6 +72,20 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
   const [price, setPrice] = useState('');
   const [missingName, setMissingName] = useState(false);
 
+  // Suggest items you already track while typing, so a repeat purchase is one tap.
+  const suggestions = useMemo(() => {
+    const query = name.trim().toLowerCase();
+    if (!typed || query.length < 2) return [];
+    const words = query.split(/\s+/);
+    return items
+      .filter((item) => {
+        const hay = item.name.toLowerCase();
+        return hay !== query && words.every((w) => hay.includes(w));
+      })
+      .sort((a, b) => Number(b.name.toLowerCase().startsWith(query)) - Number(a.name.toLowerCase().startsWith(query)))
+      .slice(0, 4);
+  }, [name, typed, items]);
+
   function save() {
     if (!name.trim()) {
       setMissingName(true);
@@ -79,7 +95,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
     const parsed = parseFloat(price.replace(',', '.'));
     onSave({
       name,
-      barcode,
+      barcode: barcode ?? pickedBarcode,
       category,
       location,
       packs,
@@ -113,6 +129,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
         value={name}
         onChangeText={(value) => {
           setName(value);
+          setTyped(true);
           setMissingName(false);
         }}
         placeholder={t('add.namePlaceholder')}
@@ -134,6 +151,45 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
         <Text variant="tiny" color="redText">
           {t('add.nameRequired')}
         </Text>
+      ) : null}
+      {suggestions.length > 0 ? (
+        <View style={{ gap: 6 }}>
+          <Text variant="tiny" color="textMuted">
+            {t('add.suggest')}
+          </Text>
+          {suggestions.map((item) => (
+            <Pressable
+              key={item.id}
+              accessibilityRole="button"
+              accessibilityLabel={item.name}
+              onPress={() => {
+                setName(item.name);
+                setCategory(item.category);
+                setLocation(item.location);
+                setPickedBarcode(item.barcode);
+                if (item.price !== undefined) setPrice(item.price.toFixed(2));
+                setTyped(false);
+              }}
+              style={{
+                minHeight: 48,
+                paddingHorizontal: 14,
+                borderRadius: 20,
+                backgroundColor: theme.surface,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 8,
+                ...Shadow.card,
+              }}>
+              <Text variant="body" weight={700} numberOfLines={1} style={{ flex: 1 }}>
+                {item.name}
+              </Text>
+              <Text variant="tiny" color="textMuted">
+                {t(`loc.${item.location}` as const)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       ) : null}
 
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>

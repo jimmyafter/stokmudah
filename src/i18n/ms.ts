@@ -132,6 +132,7 @@ export const ms: Record<TKey, string> = {
 
   'add.name': 'Nama',
   'add.namePlaceholder': 'cth. Susu segar 1L',
+  'add.suggest': 'Anda sudah ada ini. Ketik untuk guna semula:',
   'add.packs': 'Berapa pek?',
   'add.howFull': 'Berapa penuh pek yang dibuka?',
   'add.category': 'Kategori',

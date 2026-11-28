@@ -130,6 +130,7 @@ export const en = {
 
   'add.name': 'Name',
   'add.namePlaceholder': 'e.g. Fresh milk 1L',
+  'add.suggest': 'You already have these. Tap to reuse:',
   'add.packs': 'How many packs?',
   'add.howFull': 'How full is the open pack?',
   'add.category': 'Category',
