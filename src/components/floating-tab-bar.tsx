@@ -1,6 +1,6 @@
 import { router, type Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { Pressable, View } from 'react-native';
+import { Platform, Pressable, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components/icons';
@@ -14,13 +14,15 @@ type BarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>['tabBar']>>[0
 const ICONS: Record<string, IconName> = { index: 'home', stock: 'stock', shop: 'shop', insights: 'insights' };
 
 /** Floating pill bar: the active tab shows its label, the others are round icon buttons. */
-export function FloatingTabBar({ state, descriptors, emitter, navigateToTab }: BarProps) {
+export function FloatingTabBar({ state, descriptors, emitter, navigateToTab, insets: navInsets }: BarProps) {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const { t } = useInventory();
+  // Some Android phones report 0 for the bottom inset even with on-screen buttons, so keep a floor.
+  const bottomGap = Math.max(insets.bottom, navInsets.bottom, Platform.OS === 'android' ? 40 : 12) + 8;
 
   return (
-    <View style={{ backgroundColor: theme.bg, paddingHorizontal: 16, paddingTop: 6, paddingBottom: Math.max(insets.bottom, 12) }}>
+    <View style={{ backgroundColor: theme.bg, paddingHorizontal: 16, paddingTop: 6, paddingBottom: bottomGap }}>
       <View
         style={{
           height: 68,
