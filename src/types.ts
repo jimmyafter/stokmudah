@@ -35,6 +35,8 @@ export interface Item {
   /** Last price paid per pack, in RM. */
   price?: number;
   store?: string;
+  /** Small JPEG data URI taken when the item was scanned. */
+  photo?: string;
 }
 
 export interface Recipient {

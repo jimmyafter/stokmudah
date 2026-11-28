@@ -45,6 +45,8 @@ interface AddItemFormProps {
   initialName: string;
   barcode?: string;
   initialCategory?: Category;
+  /** Thumbnail from the scan, saved with the item. */
+  photo?: string;
   /** An exact date (YYYY-MM-DD), for example read from a photo of the pack. */
   initialExpiry?: string;
   /** Shown above the form, for example "Product found". */
@@ -53,7 +55,7 @@ interface AddItemFormProps {
   onCancel: () => void;
 }
 
-export function AddItemForm({ initialName, barcode, initialCategory, initialExpiry, banner, onSave, onCancel }: AddItemFormProps) {
+export function AddItemForm({ initialName, barcode, initialCategory, initialExpiry, photo, banner, onSave, onCancel }: AddItemFormProps) {
   const theme = useTheme();
   const { t } = useInventory();
   const [name, setName] = useState(initialName);
@@ -78,6 +80,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
       location,
       packs,
       level,
+      photo,
       expiry: expiry === 'scanned' ? initialExpiry : expiryDate(expiry),
       price: Number.isFinite(parsed) ? parsed : undefined,
     });

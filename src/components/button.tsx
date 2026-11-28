@@ -56,7 +56,7 @@ export function Button({ label, variant = 'primary', icon, small, disabled, styl
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: Radius.md,
+    borderRadius: Radius.pill,
     paddingHorizontal: 18,
     alignItems: 'center',
     justifyContent: 'center',

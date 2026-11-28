@@ -1,16 +1,18 @@
 export const Colors = {
   light: {
-    bg: '#FAF7F2',
+    bg: '#EEF3F0',
     surface: '#FFFFFF',
-    surfaceAlt: '#F3EFE6',
-    border: '#E8E2D8',
-    track: '#EFEAE0',
-    text: '#1B2B24',
-    textSoft: '#3C4C44',
-    textMuted: '#5B6B63',
+    surfaceAlt: '#E7EEEA',
+    border: '#E1EAE5',
+    track: '#E7EEEA',
+    text: '#17302A',
+    textSoft: '#3A4C45',
+    textMuted: '#55645D',
     primary: '#2E7D6B',
     primaryDark: '#1F6B5A',
-    primarySoft: '#EAF4F0',
+    primarySoft: '#E3F2EA',
+    deep: '#1F5C4B',
+    onDeep: '#FFFFFF',
     onPrimary: '#FFFFFF',
     green: '#2E7D6B',
     greenSoft: '#DDF1E6',
@@ -40,6 +42,8 @@ export const Colors = {
     primary: '#4FB59B',
     primaryDark: '#7FD6BE',
     primarySoft: '#1E3A32',
+    deep: '#1E3A32',
+    onDeep: '#EAF1ED',
     onPrimary: '#0B1A14',
     green: '#4FB59B',
     greenSoft: '#1F3B30',
@@ -63,7 +67,25 @@ export type ColorName = keyof typeof Colors.light;
 
 export const Spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 } as const;
 
-export const Radius = { sm: 12, md: 16, lg: 20, xl: 28, pill: 999 } as const;
+export const Radius = { sm: 14, md: 20, lg: 24, xl: 32, pill: 999 } as const;
+
+/** Soft, wide shadow used on cards so they float on the pale background. */
+export const Shadow = {
+  card: {
+    shadowColor: '#1E4637',
+    shadowOpacity: 0.08,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 6 },
+    elevation: 2,
+  },
+  bar: {
+    shadowColor: '#1E4637',
+    shadowOpacity: 0.16,
+    shadowRadius: 20,
+    shadowOffset: { width: 0, height: 10 },
+    elevation: 10,
+  },
+} as const;
 
 export type FontWeight = 400 | 500 | 600 | 700 | 800;
 

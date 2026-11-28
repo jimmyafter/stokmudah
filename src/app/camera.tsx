@@ -28,6 +28,7 @@ type Stage =
       lookup: LookupResult['status'] | 'none' | 'ai';
       category?: Category;
       expiry?: string;
+      photo?: string;
       notice?: string;
     };
 
@@ -96,8 +97,10 @@ export default function CameraScreen() {
         name: 'form',
         initialName: found ? r.data.name : '',
         category: found ? r.data.category : undefined,
+        expiry: found ? r.data.expiry : undefined,
+        photo: r.photo,
         lookup: found ? 'ai' : 'none',
-        notice: found ? t('camera.aiFound') : t('camera.aiNothing'),
+        notice: found ? (r.data.expiry ? t('camera.aiFoundExpiry') : t('camera.aiFound')) : t('camera.aiNothing'),
       });
     } else if (mode === 'expiry') {
       const r = await scanExpiry(uri);
@@ -142,6 +145,7 @@ export default function CameraScreen() {
         initialName={stage.initialName}
         initialCategory={stage.category}
         initialExpiry={stage.expiry}
+        photo={stage.photo}
         barcode={stage.barcode}
         banner={bannerFor(stage)}
         onCancel={() => {

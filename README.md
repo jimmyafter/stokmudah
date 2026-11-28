@@ -27,13 +27,16 @@ Data is stored on the device with AsyncStorage. A fresh install starts with **de
 
 ## Not built yet
 
-- Push notifications (the reminder switches are saved but nothing is sent yet).
 - Free and Premium limits, the paywall, and sign-in.
 - Sync across devices.
 
+## Reminders
+
+Near-expiry, running-low and weekly-count reminders are scheduled on the phone itself (expo-notifications), rebuilt whenever stock or the switches change. They work offline. Turning a switch on asks for notification permission. They are local reminders, not server push, so they refresh when the app is opened.
+
 ## AI photo scan
 
-The camera has four modes: **Barcode**, **Item** (photo of the product), **Expiry** (photo of the date) and **Receipt** (receipt or shopping haul). Photos are shrunk on the phone, sent to the `scan` Supabase Edge Function, which calls an Anthropic vision model and returns JSON. Receipt results open a review list; nothing changes stock until you confirm, and low-confidence lines start unticked.
+The camera has four modes: **Barcode**, **Item** (photo of the product), **Expiry** (photo of the date) and **Receipt** (receipt or shopping haul). Photos are shrunk on the phone, sent to the `scan` Supabase Edge Function, which calls an Anthropic vision model and returns JSON. An Item photo also reads a visible expiry date, and a small thumbnail is saved with the item and shown in lists. Receipt results open a review list; nothing changes stock until you confirm, and low-confidence lines start unticked.
 
 Limits are enforced on the server: 10 scans a month on the free plan, 150 on premium (`profiles.plan`). A failed AI call refunds the scan.
 
@@ -55,7 +58,7 @@ src/lib          pure logic: stock status, shopping list, WhatsApp links, dates
 src/store        app state and storage
 src/i18n         English and Bahasa Melayu strings
 src/data         demo data
-supabase         migrations (the scan edge function is deployed in Supabase)
+supabase         migrations and functions/scan (the deployed edge function)
 ```
 
 ## Before a store release

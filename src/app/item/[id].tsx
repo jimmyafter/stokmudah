@@ -58,7 +58,7 @@ export default function ItemDetail() {
       <Header title="" />
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <Avatar name={item.name} size={64} />
+        <Avatar name={item.name} size={64} photo={item.photo} />
         <View style={{ flex: 1, gap: 3 }}>
           <Text variant="title" style={{ fontSize: 24, lineHeight: 30 }}>
             {item.name}

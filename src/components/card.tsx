@@ -1,6 +1,6 @@
 import { View, type ViewProps } from 'react-native';
 
-import { Radius } from '@/constants/theme';
+import { Radius, Shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 interface CardProps extends ViewProps {
@@ -18,11 +18,10 @@ export function Card({ padded = true, radius = Radius.lg, tone = 'surface', styl
       style={[
         {
           backgroundColor: background,
-          borderColor: theme.border,
-          borderWidth: tone === 'surface' ? 1 : 0,
           borderRadius: radius,
           padding: padded ? 16 : 0,
         },
+        tone === 'surface' ? Shadow.card : null,
         style,
       ]}
       {...rest}

@@ -1,22 +1,32 @@
 import { Link } from 'expo-router';
-import { Pressable, View } from 'react-native';
+import { Image, Pressable, View } from 'react-native';
 
 import { LevelBar } from '@/components/level-bar';
 import { Pill, toneForStatus } from '@/components/pill';
 import { Text } from '@/components/text';
 import { formatDays } from '@/i18n';
 import { daysToExpiry, statusOf, unitsLeft } from '@/lib/stock';
+import { Shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { useInventory } from '@/store/inventory';
 import type { Item } from '@/types';
 
 const AVATARS = ['blue', 'amber', 'rose', 'green'] as const;
 
-export function Avatar({ name, index = 0, size = 44 }: { name: string; index?: number; size?: number }) {
+export function Avatar({ name, index = 0, size = 44, photo }: { name: string; index?: number; size?: number; photo?: string }) {
   const theme = useTheme();
   const tone = AVATARS[index % AVATARS.length];
   const bg = tone === 'blue' ? theme.blueSoft : tone === 'amber' ? theme.amberSoft : tone === 'green' ? theme.greenSoft : theme.surfaceAlt;
   const fg = tone === 'blue' ? theme.blueText : tone === 'amber' ? theme.amberText : tone === 'green' ? theme.greenText : theme.textSoft;
+  if (photo) {
+    return (
+      <Image
+        source={{ uri: photo }}
+        accessibilityIgnoresInvertColors
+        style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: theme.surfaceAlt }}
+      />
+    );
+  }
   return (
     <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: bg, alignItems: 'center', justifyContent: 'center' }}>
       <Text weight={800} style={{ color: fg, fontSize: size * 0.4 }}>
@@ -53,15 +63,14 @@ export function ItemRow({ item, index = 0, showBar = true }: { item: Item; index
         accessibilityLabel={`${item.name}, ${label}`}
         style={{
           backgroundColor: theme.surface,
-          borderColor: theme.border,
-          borderWidth: 1,
-          borderRadius: 16,
+          borderRadius: 20,
           padding: 12,
+          ...Shadow.card,
           flexDirection: 'row',
           alignItems: 'center',
           gap: 12,
         }}>
-        <Avatar name={item.name} index={index} />
+        <Avatar name={item.name} index={index} photo={item.photo} />
         <View style={{ flex: 1, gap: 6 }}>
           <Text variant="h3" numberOfLines={1}>
             {item.name}

@@ -13,7 +13,7 @@ export interface ReceiptLine {
 }
 
 export type ScanOutcome<T> =
-  | { ok: true; data: T; used: number; limit: number }
+  | { ok: true; data: T; used: number; limit: number; photo?: string }
   | { ok: false; reason: 'quota' | 'network' | 'failed' | 'notconfigured' | 'auth' };
 
 interface Raw {
@@ -34,11 +34,26 @@ async function prepare(uri: string, mode: ScanMode): Promise<string | null> {
   return out.base64 ?? null;
 }
 
+/** A tiny copy kept with the item so the list can show what it looks like. */
+async function thumbnail(uri: string): Promise<string | undefined> {
+  try {
+    const out = await ImageManipulator.manipulateAsync(uri, [{ resize: { width: 192 } }], {
+      compress: 0.55,
+      format: ImageManipulator.SaveFormat.JPEG,
+      base64: true,
+    });
+    return out.base64 ? `data:image/jpeg;base64,${out.base64}` : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
 async function run(uri: string, mode: ScanMode): Promise<ScanOutcome<Record<string, unknown>>> {
   try {
     if (!(await ensureSession())) return { ok: false, reason: 'auth' };
     const image = await prepare(uri, mode);
     if (!image) return { ok: false, reason: 'failed' };
+    const photo = mode === 'item' ? await thumbnail(uri) : undefined;
     const { data, error } = await supabase.functions.invoke<Raw>('scan', { body: { mode, image } });
     if (error) {
       const status = (error as { context?: { status?: number } }).context?.status;
@@ -48,7 +63,7 @@ async function run(uri: string, mode: ScanMode): Promise<ScanOutcome<Record<stri
       return { ok: false, reason: error.name === 'FunctionsFetchError' ? 'network' : 'failed' };
     }
     if (!data?.result) return { ok: false, reason: 'failed' };
-    return { ok: true, data: data.result, used: data.used, limit: data.limit };
+    return { ok: true, data: data.result, used: data.used, limit: data.limit, photo };
   } catch {
     return { ok: false, reason: 'network' };
   }
@@ -56,12 +71,15 @@ async function run(uri: string, mode: ScanMode): Promise<ScanOutcome<Record<stri
 
 const CATEGORIES: Category[] = ['fresh', 'pantry', 'household', 'toiletries'];
 
-export async function scanItem(uri: string): Promise<ScanOutcome<{ name: string; category: Category; confidence: number }>> {
+export async function scanItem(
+  uri: string,
+): Promise<ScanOutcome<{ name: string; category: Category; expiry?: string; confidence: number }>> {
   const r = await run(uri, 'item');
   if (!r.ok) return r;
   const name = typeof r.data.name === 'string' ? r.data.name.trim() : '';
   const cat = CATEGORIES.includes(r.data.category as Category) ? (r.data.category as Category) : 'pantry';
-  return { ...r, data: { name, category: cat, confidence: Number(r.data.confidence) || 0 } };
+  const expiry = typeof r.data.expiry === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(r.data.expiry) ? r.data.expiry : undefined;
+  return { ...r, data: { name, category: cat, expiry, confidence: Number(r.data.confidence) || 0 } };
 }
 
 export async function scanExpiry(uri: string): Promise<ScanOutcome<{ date?: string; confidence: number }>> {

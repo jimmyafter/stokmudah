@@ -1,3 +1,4 @@
+import { requestNotificationPermission } from '@/lib/notifications';
 import { useState } from 'react';
 import { Alert, Pressable, Switch, TextInput, View } from 'react-native';
 
@@ -177,7 +178,13 @@ export default function SettingsScreen() {
             right={
               <Switch
                 value={settings.reminders[reminder.key]}
-                onValueChange={(value) => setReminder(reminder.key, value)}
+                onValueChange={async (value) => {
+                  if (value && !(await requestNotificationPermission())) {
+                    Alert.alert(t('settings.notifyDenied'));
+                    return;
+                  }
+                  setReminder(reminder.key, value);
+                }}
                 trackColor={{ true: theme.primary, false: theme.track }}
                 accessibilityLabel={reminder.title}
               />

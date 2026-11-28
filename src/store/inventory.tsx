@@ -11,6 +11,7 @@ import {
 
 import { defaultSettings, MAX_RECIPIENTS, sampleItems } from '@/data/sample';
 import { makeT, type TFunction } from '@/i18n';
+import { syncNotifications } from '@/lib/notifications';
 import type { Category, ExtraLine, Item, Language, Location, Reminders, Settings } from '@/types';
 
 const STORAGE_KEY = 'stokmudah:v1';
@@ -32,6 +33,7 @@ export interface NewPurchase {
   level: number;
   expiry?: string;
   price?: number;
+  photo?: string;
 }
 
 interface InventoryValue {
@@ -103,6 +105,15 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state)).catch(() => {});
   }, [ready, state]);
 
+  // Keep scheduled reminders in step with the stock and the switches.
+  useEffect(() => {
+    if (!ready) return;
+    const timer = setTimeout(() => {
+      syncNotifications(state.items, state.settings.reminders, makeT(state.settings.language));
+    }, 800);
+    return () => clearTimeout(timer);
+  }, [ready, state.items, state.settings.reminders, state.settings.language]);
+
   const patch = useCallback((fn: (current: Persisted) => Persisted) => setState(fn), []);
 
   const addPurchase = useCallback(
@@ -131,6 +142,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
                     quantity: item.quantity + purchase.packs,
                     level: item.quantity > 0 ? item.level : purchase.level,
                     price: purchase.price ?? item.price,
+                    photo: item.photo ?? purchase.photo,
                     batches: [...item.batches, batch],
                   }
                 : item,
@@ -149,6 +161,7 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
           usualQty: Math.max(1, purchase.packs),
           warnDays: purchase.category === 'fresh' ? 3 : 30,
           price: purchase.price,
+          photo: purchase.photo,
           batches: [batch],
         };
         return { ...current, items: [created, ...current.items] };

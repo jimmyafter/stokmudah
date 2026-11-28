@@ -8,7 +8,9 @@ import { Icon } from '@/components/icons';
 import { ItemRow } from '@/components/item-row';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
+import { Shadow } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
+import { estimateTotal, suggestedLines } from '@/lib/shopping';
 import { healthCounts, useFirst } from '@/lib/stock';
 import { useInventory } from '@/store/inventory';
 
@@ -28,6 +30,7 @@ export default function HomeScreen() {
   const now = new Date();
   const counts = healthCounts(items, now);
   const soon = useFirst(items, 3, now);
+  const listLines = suggestedLines(items, now);
   const dateLabel = now.toLocaleDateString(language === 'ms' ? 'ms-MY' : 'en-MY', {
     weekday: 'long',
     day: 'numeric',
@@ -51,15 +54,36 @@ export default function HomeScreen() {
             width: 44,
             height: 44,
             borderRadius: 22,
-            borderWidth: 1,
-            borderColor: theme.border,
             backgroundColor: theme.surface,
             alignItems: 'center',
             justifyContent: 'center',
+            ...Shadow.card,
           }}>
           <Icon name="user" color={theme.text} size={22} />
         </Pressable>
       </View>
+
+      {listLines.length > 0 ? (
+        <View style={{ backgroundColor: theme.deep, borderRadius: 28, padding: 20, gap: 6, overflow: 'hidden' }}>
+          <View style={{ position: 'absolute', right: -34, top: -40, width: 140, height: 140, borderRadius: 70, backgroundColor: 'rgba(255,255,255,0.07)' }} />
+          <View style={{ position: 'absolute', right: 30, bottom: -50, width: 100, height: 100, borderRadius: 50, backgroundColor: 'rgba(255,255,255,0.06)' }} />
+          <Text variant="h2" style={{ color: theme.onDeep }}>
+            {t('home.listReady')}
+          </Text>
+          <Text variant="small" style={{ color: theme.onDeep, opacity: 0.85 }}>
+            {t('home.listMeta', { n: listLines.length, total: Math.round(estimateTotal(listLines)) })}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('home.viewList')}
+            onPress={() => router.push('/shop')}
+            style={{ marginTop: 8, alignSelf: 'flex-start', minHeight: 44, paddingHorizontal: 20, borderRadius: 22, backgroundColor: '#DFF5E8', justifyContent: 'center' }}>
+            <Text variant="small" weight={800} style={{ color: '#1F5C4B' }}>
+              {t('home.viewList')}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       {items.length === 0 ? (
         <Card style={{ alignItems: 'center', gap: 8, paddingVertical: 28 }}>
