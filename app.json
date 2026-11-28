@@ -41,6 +41,13 @@
           "cameraPermission": "StokMudah uses the camera to scan barcodes so you do not have to type product names.",
           "recordAudioAndroid": false
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "StokMudah lets you pick a photo of an item from your gallery.",
+          "cameraPermission": "StokMudah uses the camera to take a photo of an item."
+        }
       ]
     ],
     "experiments": {

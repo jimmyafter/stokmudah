@@ -92,6 +92,12 @@ export const ms: Record<TKey, string> = {
   'batch.edit': 'Ubah kelompok',
   'batch.remove': 'Buang kelompok',
   'batch.expiryNone': 'Tiada tarikh luput',
+  'photo.add': 'Tambah gambar',
+  'photo.change': 'Tukar gambar',
+  'photo.take': 'Ambil gambar',
+  'photo.gallery': 'Pilih dari galeri',
+  'photo.remove': 'Buang gambar',
+  'photo.denied': 'Benarkan akses kamera atau gambar untuk StokMudah dalam tetapan telefon.',
   'item.delete': 'Padam barang',
 
   'camera.title': 'Tambah barang',

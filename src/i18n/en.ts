@@ -90,6 +90,12 @@ export const en = {
   'batch.edit': 'Edit batch',
   'batch.remove': 'Remove batch',
   'batch.expiryNone': 'No expiry date',
+  'photo.add': 'Add photo',
+  'photo.change': 'Change photo',
+  'photo.take': 'Take a photo',
+  'photo.gallery': 'Choose from gallery',
+  'photo.remove': 'Remove photo',
+  'photo.denied': 'Allow camera or photo access for StokMudah in your phone settings.',
   'item.delete': 'Delete item',
 
   'camera.title': 'Add an item',

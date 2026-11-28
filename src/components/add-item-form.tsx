@@ -5,6 +5,7 @@ import { Pressable, TextInput, View } from 'react-native';
 import { Button } from '@/components/button';
 import { Chip } from '@/components/chip';
 import { DateInput } from '@/components/date-input';
+import { PhotoTile } from '@/components/photo-tile';
 import { LevelSlider } from '@/components/level-slider';
 import { Screen } from '@/components/screen';
 import { Stepper } from '@/components/stepper';
@@ -62,6 +63,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
   const { t, items, wouldExceedLimit } = useInventory();
   const [pickedBarcode, setPickedBarcode] = useState<string | undefined>();
   const [typed, setTyped] = useState(false);
+  const [itemPhoto, setItemPhoto] = useState<string | undefined>(photo);
   const [name, setName] = useState(initialName);
   const [packs, setPacks] = useState(1);
   const [level, setLevel] = useState(1);
@@ -105,7 +107,7 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
       location,
       packs,
       level,
-      photo,
+      photo: itemPhoto,
       expiry: expiry === 'manual' ? (manualDate ?? undefined) : expiry === 'scanned' ? initialExpiry : expiryDate(expiry),
       price: Number.isFinite(parsed) ? parsed : undefined,
     });
@@ -126,6 +128,8 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
           {banner}
         </Text>
       ) : null}
+
+      <PhotoTile name={name} photo={itemPhoto} onChange={setItemPhoto} size={72} withLabel />
 
       <Text variant="label" color="textMuted">
         {t('add.name')}

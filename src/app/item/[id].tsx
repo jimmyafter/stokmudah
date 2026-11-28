@@ -2,7 +2,8 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, TextInput, View } from 'react-native';
 
-import { Avatar, useStatusLabel } from '@/components/item-row';
+import { useStatusLabel } from '@/components/item-row';
+import { PhotoTile } from '@/components/photo-tile';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { Chip } from '@/components/chip';
@@ -60,7 +61,7 @@ export default function ItemDetail() {
       insetTop={false}
       contentStyle={{ paddingTop: 28 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-        <Avatar name={item.name} size={64} photo={item.photo} />
+        <PhotoTile name={item.name} photo={item.photo} size={64} onChange={(photo) => updateItem(item.id, { photo })} />
         <View style={{ flex: 1, gap: 3 }}>
           <Text variant="title" style={{ fontSize: 24, lineHeight: 30 }}>
             {item.name}

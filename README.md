@@ -37,6 +37,10 @@ Data is stored on the device with AsyncStorage. A fresh install starts with **de
 - **Paywall:** opens when you hit the item cap or run out of scans, and from Settings, Plan. Prices shown are RM 79 a year and RM 9.90 a month. There is no billing yet: connect RevenueCat or the store billing in a development or store build, then call `setPlan('premium')` from the purchase result. In development builds the paywall has a "Preview Premium (testing only)" button. Note that the preview only lifts the item cap; the AI scan limit is set on the server in `profiles.plan`.
 - **Onboarding:** three screens on first launch (language, payday, demo or empty start). People who already had data skip it.
 
+## Item photos
+
+Every item can have a thumbnail: take one or pick one from the gallery with the photo tile in the add form, or tap the picture on the item sheet to change or remove it. Photos are squared, shrunk to about 6 KB and stored on the device only. Item-mode AI scans set it automatically. Taking a photo this way does not use an AI scan.
+
 ## Reminders
 
 Near-expiry, running-low and weekly-count reminders are scheduled on the phone itself (expo-notifications), rebuilt whenever stock or the switches change. They work offline. Turning a switch on asks for notification permission. They are local reminders, not server push, so they refresh when the app is opened.
