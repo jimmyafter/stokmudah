@@ -1,22 +1,36 @@
 import { router, useLocalSearchParams } from 'expo-router';
-import { View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, TextInput, View } from 'react-native';
 
 import { Avatar, useStatusLabel } from '@/components/item-row';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
+import { Chip } from '@/components/chip';
+import { Icon } from '@/components/icons';
 import { Pill } from '@/components/pill';
 import { Screen } from '@/components/screen';
 import { Text } from '@/components/text';
+import { fontFor, Shadow } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
 import { formatDays, levelLabel } from '@/i18n';
 import { daysUntil, parseISODate } from '@/lib/dates';
 import { unitsLeft } from '@/lib/stock';
 import { useInventory } from '@/store/inventory';
+import type { Category, Location } from '@/types';
+
+const CATEGORIES: Category[] = ['fresh', 'pantry', 'household', 'toiletries'];
+const LOCATIONS: Location[] = ['kitchen', 'bathroom', 'storeroom'];
 
 export default function ItemDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { items, t, language, removePack, deleteItem, excluded, toggleExcluded } = useInventory();
+  const theme = useTheme();
+  const { items, t, language, removePack, deleteItem, excluded, toggleExcluded, updateItem } = useInventory();
   const statusLabel = useStatusLabel();
   const item = items.find((candidate) => candidate.id === id);
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState('');
+  const [category, setCategory] = useState<Category>('pantry');
+  const [location, setLocation] = useState<Location>('kitchen');
 
   if (!item) {
     return (
@@ -49,9 +63,74 @@ export default function ItemDetail() {
           <Text variant="small" color="textMuted">
             {t(`cat.${item.category}` as const)} · {t(`loc.${item.location}` as const)}
           </Text>
+          <Pill label={label} tone={tone} />
         </View>
-        <Pill label={label} tone={tone} />
+        {!editing ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('item.edit')}
+            onPress={() => {
+              setName(item.name);
+              setCategory(item.category);
+              setLocation(item.location);
+              setEditing(true);
+            }}
+            style={{ width: 46, height: 46, borderRadius: 23, backgroundColor: theme.surface, alignItems: 'center', justifyContent: 'center', ...Shadow.card }}>
+            <Icon name="edit" color={theme.text} size={20} />
+          </Pressable>
+        ) : null}
       </View>
+
+      {editing ? (
+        <View style={{ gap: 12 }}>
+          <Text variant="label" color="textMuted">
+            {t('add.name')}
+          </Text>
+          <TextInput
+            value={name}
+            onChangeText={setName}
+            accessibilityLabel={t('add.name')}
+            style={{
+              minHeight: 52,
+              paddingHorizontal: 14,
+              borderRadius: 20,
+              backgroundColor: theme.surface,
+              color: theme.text,
+              fontFamily: fontFor(700),
+              fontSize: 16,
+            }}
+          />
+          <Text variant="label" color="textMuted">
+            {t('add.category')}
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {CATEGORIES.map((c) => (
+              <Chip key={c} label={t(`cat.${c}` as const)} selected={category === c} onPress={() => setCategory(c)} />
+            ))}
+          </View>
+          <Text variant="label" color="textMuted">
+            {t('add.location')}
+          </Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+            {LOCATIONS.map((l) => (
+              <Chip key={l} label={t(`loc.${l}` as const)} selected={location === l} onPress={() => setLocation(l)} />
+            ))}
+          </View>
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 4 }}>
+            <Button label={t('common.cancel')} variant="secondary" style={{ flex: 1 }} onPress={() => setEditing(false)} />
+            <Button
+              label={t('common.save')}
+              style={{ flex: 1 }}
+              disabled={!name.trim()}
+              onPress={() => {
+                updateItem(item.id, { name: name.trim(), category, location });
+                setEditing(false);
+              }}
+            />
+          </View>
+        </View>
+      ) : (
+        <>
 
       <View style={{ flexDirection: 'row', gap: 10 }}>
         <Card style={{ flex: 1, padding: 12, gap: 2 }}>
@@ -156,6 +235,8 @@ export default function ItemDetail() {
           router.back();
         }}
       />
+        </>
+      )}
     </Screen>
   );
 }

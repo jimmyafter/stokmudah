@@ -14,7 +14,8 @@ export type IconName =
   | 'user'
   | 'check'
   | 'calendar'
-  | 'trash';
+  | 'trash'
+  | 'edit';
 
 interface IconProps {
   name: IconName;
@@ -100,6 +101,8 @@ function glyph(name: IconName) {
           <Path d="M3 10h18M8 3v4M16 3v4" />
         </>
       );
+    case 'edit':
+      return <Path d="M4 20h4L19 9l-4-4L4 16z" />;
     case 'trash':
       return <Path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3" />;
   }

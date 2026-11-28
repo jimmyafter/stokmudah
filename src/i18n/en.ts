@@ -82,6 +82,7 @@ export const en = {
   'item.markUsed': 'Used it',
   'item.throwAway': 'Throw away',
   'item.notFound': 'This item no longer exists.',
+  'item.edit': 'Edit item',
   'item.delete': 'Delete item',
 
   'camera.title': 'Add an item',

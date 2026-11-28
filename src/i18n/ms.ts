@@ -84,6 +84,7 @@ export const ms: Record<TKey, string> = {
   'item.markUsed': 'Sudah guna',
   'item.throwAway': 'Buang',
   'item.notFound': 'Barang ini sudah tiada.',
+  'item.edit': 'Ubah barang',
   'item.delete': 'Padam barang',
 
   'camera.title': 'Tambah barang',
