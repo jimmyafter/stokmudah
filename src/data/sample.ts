@@ -182,6 +182,8 @@ export const defaultSettings: Settings = {
 
 export const MAX_RECIPIENTS = 3;
 export const FREE_ITEM_LIMIT = 40;
+export const FREE_SCAN_LIMIT = 10;
+export const PREMIUM_SCAN_LIMIT = 150;
 
 /** Placeholder spending figures until receipts are scanned. */
 export const sampleSpend = {

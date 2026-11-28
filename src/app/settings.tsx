@@ -1,5 +1,6 @@
 import { requestNotificationPermission } from '@/lib/notifications';
-import { useState } from 'react';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, Switch, TextInput, View } from 'react-native';
 
 import { Avatar } from '@/components/item-row';
@@ -10,7 +11,8 @@ import { Header } from '@/components/header';
 import { Screen } from '@/components/screen';
 import { Stepper } from '@/components/stepper';
 import { Text } from '@/components/text';
-import { FREE_ITEM_LIMIT, MAX_RECIPIENTS } from '@/data/sample';
+import { FREE_ITEM_LIMIT, FREE_SCAN_LIMIT, MAX_RECIPIENTS, PREMIUM_SCAN_LIMIT } from '@/data/sample';
+import { getScanUsage } from '@/lib/scan-usage';
 import { fontFor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { isPlausiblePhone } from '@/lib/whatsapp';
@@ -36,8 +38,14 @@ function Row({ title, hint, right }: { title: string; hint?: string; right: Reac
 export default function SettingsScreen() {
   const theme = useTheme();
   const {
-    t, settings, items, setLanguage, setPayday, setReminder, addRecipient, removeRecipient, resetDemo, clearAll,
+    t, settings, items, setLanguage, setPayday, setReminder, addRecipient, removeRecipient, resetDemo, clearAll, plan,
   } = useInventory();
+  const [scans, setScans] = useState<{ used: number; limit: number } | null>(null);
+  useEffect(() => {
+    getScanUsage().then((usage) =>
+      setScans(usage ? { used: usage.used, limit: plan === 'premium' ? PREMIUM_SCAN_LIMIT : FREE_SCAN_LIMIT } : null),
+    );
+  }, [plan]);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -199,12 +207,30 @@ export default function SettingsScreen() {
       <Text variant="label" color="textMuted" style={{ marginTop: 10 }}>
         {t('settings.plan')}
       </Text>
-      <Card style={{ gap: 2 }}>
-        <Text variant="h3">{t('settings.freePlan')}</Text>
-        <Text variant="small" color="textMuted">
-          {t('settings.freeUsage', { used: items.length, max: FREE_ITEM_LIMIT })}
-        </Text>
-      </Card>
+      <Pressable accessibilityRole="button" onPress={() => router.push('/paywall')}>
+        <Card style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text variant="h3">{plan === 'premium' ? t('settings.premiumPlan') : t('settings.freePlan')}</Text>
+            {plan === 'free' ? (
+              <Text variant="small" color="textMuted">
+                {t('settings.freeUsage', { used: items.length, max: FREE_ITEM_LIMIT })}
+              </Text>
+            ) : null}
+            {scans ? (
+              <Text variant="small" color="textMuted">
+                {t('settings.scansUsage', { used: scans.used, max: scans.limit })}
+              </Text>
+            ) : null}
+          </View>
+          {plan === 'free' ? (
+            <View style={{ backgroundColor: theme.primary, borderRadius: 999, paddingHorizontal: 14, paddingVertical: 8 }}>
+              <Text variant="small" weight={700} style={{ color: theme.onPrimary }}>
+                {t('settings.upgrade')}
+              </Text>
+            </View>
+          ) : null}
+        </Card>
+      </Pressable>
 
       <Text variant="label" color="textMuted" style={{ marginTop: 10 }}>
         {t('settings.data')}

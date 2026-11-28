@@ -7,12 +7,10 @@
     "icon": "./assets/images/icon.png",
     "scheme": "stokmudah",
     "userInterfaceStyle": "automatic",
-    "ios": {
-      "icon": "./assets/expo.icon"
-    },
+    "ios": {},
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#EAF4F0",
+        "backgroundColor": "#1F5C4B",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -30,7 +28,11 @@
         {
           "backgroundColor": "#EEF3F0",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 140,
+          "dark": {
+            "backgroundColor": "#121A16",
+            "image": "./assets/images/splash-icon.png"
+          }
         }
       ],
       [

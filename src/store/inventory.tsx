@@ -9,7 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 
-import { defaultSettings, MAX_RECIPIENTS, sampleItems } from '@/data/sample';
+import { defaultSettings, FREE_ITEM_LIMIT, MAX_RECIPIENTS, sampleItems } from '@/data/sample';
 import { makeT, type TFunction } from '@/i18n';
 import { syncNotifications } from '@/lib/notifications';
 import type { Category, ExtraLine, Item, Language, Location, Reminders, Settings } from '@/types';
@@ -21,6 +21,9 @@ interface Persisted {
   settings: Settings;
   extras: ExtraLine[];
   excluded: Record<string, boolean>;
+  /** False until the first-run screens are finished. */
+  onboarded: boolean;
+  plan: 'free' | 'premium';
 }
 
 /** What the add-item form produces. Merged into an existing item when it matches. */
@@ -58,6 +61,14 @@ interface InventoryValue {
   removeExtra: (id: string) => void;
   toggleExcluded: (id: string) => void;
   resetDemo: () => void;
+  onboarded: boolean;
+  plan: 'free' | 'premium';
+  /** How many more new items the free plan allows (Infinity on Premium). */
+  freeSlotsLeft: number;
+  /** True when saving this purchase would create a new item beyond the free limit. */
+  wouldExceedLimit: (purchase: { name: string; barcode?: string }) => boolean;
+  setPlan: (plan: 'free' | 'premium') => void;
+  completeOnboarding: (options: { language: Language; paydayDay: number; withDemo: boolean }) => void;
   clearAll: () => void;
 }
 
@@ -68,7 +79,7 @@ function makeId(): string {
 }
 
 function seed(): Persisted {
-  return { items: sampleItems(), settings: defaultSettings, extras: [], excluded: {} };
+  return { items: sampleItems(), settings: defaultSettings, extras: [], excluded: {}, onboarded: false, plan: 'free' };
 }
 
 export function InventoryProvider({ children }: { children: ReactNode }) {
@@ -87,6 +98,9 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
             settings: { ...defaultSettings, ...saved.settings },
             extras: saved.extras ?? [],
             excluded: saved.excluded ?? {},
+            // People who already used the app before onboarding existed skip it.
+            onboarded: saved.onboarded ?? true,
+            plan: saved.plan ?? 'free',
           });
         }
       } catch {
@@ -279,6 +293,39 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
     [patch],
   );
 
+  const setPlan = useCallback((plan: 'free' | 'premium') => patch((c) => ({ ...c, plan })), [patch]);
+
+  const completeOnboarding = useCallback(
+    (options: { language: Language; paydayDay: number; withDemo: boolean }) =>
+      patch((c) => ({
+        ...c,
+        onboarded: true,
+        items: options.withDemo ? sampleItems() : [],
+        extras: [],
+        excluded: {},
+        settings: {
+          ...c.settings,
+          language: options.language,
+          paydayDay: options.paydayDay,
+          recipients: options.withDemo ? c.settings.recipients : [],
+        },
+      })),
+    [patch],
+  );
+
+  const freeSlotsLeft = state.plan === 'premium' ? Infinity : Math.max(0, FREE_ITEM_LIMIT - state.items.length);
+  const wouldExceedLimit = useCallback(
+    (purchase: { name: string; barcode?: string }) => {
+      if (state.plan === 'premium' || state.items.length < FREE_ITEM_LIMIT) return false;
+      const wanted = purchase.name.trim().toLowerCase();
+      const known = state.items.some(
+        (item) => (purchase.barcode && item.barcode === purchase.barcode) || item.name.trim().toLowerCase() === wanted,
+      );
+      return !known;
+    },
+    [state.plan, state.items],
+  );
+
   const language = state.settings.language;
   const t = useMemo(() => makeT(language), [language]);
 
@@ -305,11 +352,17 @@ export function InventoryProvider({ children }: { children: ReactNode }) {
       toggleExcluded,
       resetDemo,
       clearAll,
+      onboarded: state.onboarded,
+      plan: state.plan,
+      freeSlotsLeft,
+      wouldExceedLimit,
+      setPlan,
+      completeOnboarding,
     }),
     [
       ready, state, language, t, addPurchase, updateItem, deleteItem, removePack, setLanguage,
       setPayday, setReminder, addRecipient, removeRecipient, addExtra, removeExtra,
-      toggleExcluded, resetDemo, clearAll,
+      toggleExcluded, resetDemo, clearAll, freeSlotsLeft, wouldExceedLimit, setPlan, completeOnboarding,
     ],
   );
 

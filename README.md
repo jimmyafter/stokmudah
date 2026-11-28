@@ -27,8 +27,15 @@ Data is stored on the device with AsyncStorage. A fresh install starts with **de
 
 ## Not built yet
 
-- Free and Premium limits, the paywall, and sign-in.
+- Real payments. The Premium screen is built, but the Continue button only explains that billing is switched on in a store build (see below).
+- Sign-in (each install uses an anonymous account for AI quota).
 - Sync across devices.
+
+## Free plan, Premium and first run
+
+- **Free limits:** 40 tracked items (adding to an item you already track never counts) and 10 AI scans a month, enforced on the server. Premium is 150 scans a month and no item cap.
+- **Paywall:** opens when you hit the item cap or run out of scans, and from Settings, Plan. Prices shown are RM 79 a year and RM 9.90 a month. There is no billing yet: connect RevenueCat or the store billing in a development or store build, then call `setPlan('premium')` from the purchase result. In development builds the paywall has a "Preview Premium (testing only)" button. Note that the preview only lifts the item cap; the AI scan limit is set on the server in `profiles.plan`.
+- **Onboarding:** three screens on first launch (language, payday, demo or empty start). People who already had data skip it.
 
 ## Reminders
 

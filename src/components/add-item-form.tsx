@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 import { Pressable, TextInput, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -58,7 +59,7 @@ interface AddItemFormProps {
 
 export function AddItemForm({ initialName, barcode, initialCategory, initialExpiry, photo, banner, onSave, onCancel }: AddItemFormProps) {
   const theme = useTheme();
-  const { t, items } = useInventory();
+  const { t, items, wouldExceedLimit } = useInventory();
   const [pickedBarcode, setPickedBarcode] = useState<string | undefined>();
   const [typed, setTyped] = useState(false);
   const [name, setName] = useState(initialName);
@@ -92,6 +93,10 @@ export function AddItemForm({ initialName, barcode, initialCategory, initialExpi
       return;
     }
     if (expiry === 'manual' && !manualDate) return;
+    if (wouldExceedLimit({ name, barcode: barcode ?? pickedBarcode })) {
+      router.push({ pathname: '/paywall', params: { reason: 'items' } });
+      return;
+    }
     const parsed = parseFloat(price.replace(',', '.'));
     onSave({
       name,

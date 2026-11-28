@@ -71,7 +71,10 @@ export default function CameraScreen() {
   }
 
   function reasonText(reason: Extract<ScanOutcome<unknown>, { ok: false }>['reason']): string {
-    if (reason === 'quota') return t('camera.aiQuota');
+    if (reason === 'quota') {
+      router.push({ pathname: '/paywall', params: { reason: 'scans' } });
+      return t('camera.aiQuota');
+    }
     if (reason === 'network') return t('camera.aiNetwork');
     if (reason === 'notconfigured') return t('camera.aiNotReady');
     return t('camera.aiFailed');

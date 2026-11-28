@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { router } from 'expo-router';
 import { Pressable, View } from 'react-native';
 
 import { Button } from '@/components/button';
@@ -17,7 +18,7 @@ interface Props {
 /** Shows what the AI read from a receipt. Nothing changes stock until the person confirms. */
 export function ReceiptReview({ lines, onDone, onRetry }: Props) {
   const theme = useTheme();
-  const { t, items, addPurchase } = useInventory();
+  const { t, items, addPurchase, freeSlotsLeft } = useInventory();
 
   const rows = useMemo(
     () =>
@@ -38,8 +39,18 @@ export function ReceiptReview({ lines, onDone, onRetry }: Props) {
   const count = on.filter(Boolean).length;
 
   function confirm() {
+    let slots = freeSlotsLeft;
+    let blocked = false;
     rows.forEach(({ line, match }, i) => {
       if (!on[i]) return;
+      // A line that matches an item you track never counts against the free limit.
+      if (!match) {
+        if (slots <= 0) {
+          blocked = true;
+          return;
+        }
+        slots -= 1;
+      }
       addPurchase({
         name: match?.name ?? line.name,
         barcode: match?.barcode,
@@ -50,6 +61,11 @@ export function ReceiptReview({ lines, onDone, onRetry }: Props) {
         price: line.price,
       });
     });
+    if (blocked) {
+      onDone();
+      router.push({ pathname: '/paywall', params: { reason: 'items' } });
+      return;
+    }
     onDone();
   }
 

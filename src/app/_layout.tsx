@@ -35,6 +35,35 @@ function Gate({ children }: { children: ReactNode }) {
   return show ? <>{children}</> : null;
 }
 
+function Routes({ palette }: { palette: (typeof Colors)['light'] | (typeof Colors)['dark'] }) {
+  const { onboarded } = useInventory();
+  return (
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
+      <Stack.Protected guard={!onboarded}>
+        <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
+      </Stack.Protected>
+      <Stack.Protected guard={onboarded}>
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
+        <Stack.Screen name="count" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="paywall" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="settings" />
+        <Stack.Screen
+          name="item/[id]"
+          options={{
+            presentation: 'formSheet',
+            sheetAllowedDetents: [0.62, 1],
+            sheetGrabberVisible: true,
+            sheetCornerRadius: 32,
+            sheetExpandsWhenScrolledToEdge: true,
+            contentStyle: { backgroundColor: palette.bg },
+          }}
+        />
+      </Stack.Protected>
+    </Stack>
+  );
+}
+
 export default function RootLayout() {
   const scheme = useColorScheme() === 'dark' ? 'dark' : 'light';
   const palette = Colors[scheme];
@@ -56,23 +85,7 @@ export default function RootLayout() {
       <ThemeProvider value={navTheme}>
         <Gate>
           <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: palette.bg } }}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="camera" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
-            <Stack.Screen name="count" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="settings" />
-            <Stack.Screen
-              name="item/[id]"
-              options={{
-                presentation: 'formSheet',
-                sheetAllowedDetents: [0.62, 1],
-                sheetGrabberVisible: true,
-                sheetCornerRadius: 32,
-                sheetExpandsWhenScrolledToEdge: true,
-                contentStyle: { backgroundColor: palette.bg },
-              }}
-            />
-          </Stack>
+          <Routes palette={palette} />
         </Gate>
       </ThemeProvider>
     </InventoryProvider>
