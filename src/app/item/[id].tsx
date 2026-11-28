@@ -39,22 +39,7 @@ export default function ItemDetail() {
     <Screen
       insetBottom
       insetTop={false}
-      contentStyle={{ paddingTop: 28 }}
-      footer={
-        <View style={{ flexDirection: 'row', gap: 12 }}>
-          <Button
-            label={onList ? t('item.addedToList') : t('item.addToList')}
-            variant="secondary"
-            style={{ flex: 1 }}
-            onPress={() => toggleExcluded(item.id)}
-          />
-          <Button
-            label={t('item.countNow')}
-            style={{ flex: 1 }}
-            onPress={() => router.push({ pathname: '/count', params: { id: item.id } })}
-          />
-        </View>
-      }>
+      contentStyle={{ paddingTop: 28 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
         <Avatar name={item.name} size={64} photo={item.photo} />
         <View style={{ flex: 1, gap: 3 }}>
@@ -95,6 +80,38 @@ export default function ItemDetail() {
         </Card>
       </View>
 
+      <View style={{ gap: 10 }}>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Button
+            label={t('item.countNow')}
+            style={{ flex: 1 }}
+            onPress={() => router.push({ pathname: '/count', params: { id: item.id } })}
+          />
+          <Button
+            label={onList ? t('item.addedToList') : t('item.addToList')}
+            variant="secondary"
+            style={{ flex: 1 }}
+            onPress={() => toggleExcluded(item.id)}
+          />
+        </View>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Button
+            label={t('item.markUsed')}
+            variant="secondary"
+            style={{ flex: 1 }}
+            disabled={item.quantity <= 0}
+            onPress={() => removePack(item.id)}
+          />
+          <Button
+            label={t('item.throwAway')}
+            variant="danger"
+            style={{ flex: 1 }}
+            disabled={item.quantity <= 0}
+            onPress={() => removePack(item.id)}
+          />
+        </View>
+      </View>
+
       <Text variant="h2" style={{ marginTop: 6 }}>
         {t('item.batches')}
       </Text>
@@ -130,24 +147,6 @@ export default function ItemDetail() {
         </Text>
       ) : null}
 
-      <View style={{ flexDirection: 'row', gap: 10, marginTop: 6 }}>
-        <Button
-          label={t('item.markUsed')}
-          small
-          style={{ flex: 1, backgroundColor: undefined }}
-          variant="secondary"
-          disabled={item.quantity <= 0}
-          onPress={() => removePack(item.id)}
-        />
-        <Button
-          label={t('item.throwAway')}
-          small
-          variant="danger"
-          style={{ flex: 1 }}
-          disabled={item.quantity <= 0}
-          onPress={() => removePack(item.id)}
-        />
-      </View>
       <Button
         label={t('item.delete')}
         small
